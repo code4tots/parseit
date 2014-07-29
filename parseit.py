@@ -1,7 +1,8 @@
 import re
 
 class Token(object):
-	def __init__(self,token,string,start,end):
+	def __init__(self,type_,string,token,start,end):
+		self.type_ = type_                            # type of token (int, float, keyword, etc.)
 		self.token = token                            # string containing this token
 		self.string = string                          # entire string being processed
 		self.start = start                            # position of string where this token begins
@@ -16,7 +17,7 @@ class Token(object):
 		self.column_number = start - a + 1             # column number
 	
 	def __repr__(self):
-		return '(%s,%s,%s)'%(self.token,self.start,self.end)
+		return '(%s,%s,%s,%s)'%(self.type_,self.token,self.start,self.end)
 	
 	def __str__(self):
 		return self.token
@@ -82,7 +83,7 @@ class Lexer(object):
 			i = ignore_regex.match(string,i).end()
 			if i >= len(string): break
 			
-			for type_, regex in token_types.items():
+			for type_, regex in self.token_types.items():
 				m = regex.match(string,i)
 				if m:
 					i = m.end()
@@ -131,8 +132,7 @@ class Parser(object):
 		
 		seen.add(self)
 		for parser in self.children:
-			self.descendants(seen)
-		
+			parser.descendants(seen)
 		return seen
 		
 	def __or__(self,other):
@@ -241,5 +241,3 @@ class Repeat(Parser):
 ZeroOrMore = lambda parser    : Repeat(parser)
 OneOrMore  = lambda parser    : Repeat(parser,1)
 AtMost     = lambda parser, n : Repeat(parser,0,n)
-
-
